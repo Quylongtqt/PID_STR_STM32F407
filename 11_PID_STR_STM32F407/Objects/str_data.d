@@ -1,0 +1,14 @@
+.\objects\str_data.o: Matlab_STR\str_data.c
+.\objects\str_data.o: Matlab_STR\str.h
+.\objects\str_data.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\str_data.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\str_data.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\str_data.o: Matlab_STR\rtwtypes.h
+.\objects\str_data.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
+.\objects\str_data.o: Matlab_STR\rt_nonfinite.h
+.\objects\str_data.o: Matlab_STR\rtGetInf.h
+.\objects\str_data.o: Matlab_STR\rtGetNaN.h
+.\objects\str_data.o: Matlab_STR\rt_SATURATE.h
+.\objects\str_data.o: Matlab_STR\rt_pow_snf.h
+.\objects\str_data.o: Matlab_STR\str_types.h
+.\objects\str_data.o: Matlab_STR\str_private.h
