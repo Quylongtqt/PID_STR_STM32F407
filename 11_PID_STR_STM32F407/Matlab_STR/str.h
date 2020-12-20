@@ -3,11 +3,11 @@
  *
  * Real-Time Workshop code generated for Simulink model str.
  *
- * Model version                        : 1.59
+ * Model version                        : 1.60
  * Real-Time Workshop file version      : 7.4  (R2009b)  29-Jun-2009
- * Real-Time Workshop file generated on : Sun Dec 06 17:01:10 2020
+ * Real-Time Workshop file generated on : Thu Dec 17 22:35:47 2020
  * TLC version                          : 7.4 (Jul 14 2009)
- * C/C++ source code generated on       : Sun Dec 06 17:01:10 2020
+ * C/C++ source code generated on       : Thu Dec 17 22:35:47 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: 32-bit Generic
@@ -75,9 +75,6 @@ struct Parameters_str_ {
   real_T UnitDelay_X0[4];              /* Expression: [-1; 0.1; 0.1; 1]
                                         * Referenced by: '<S2>/Unit Delay'
                                         */
-  real_T setpointDeg1_Value;           /* Expression: 360
-                                        * Referenced by: '<Root>/setpoint (Deg)1'
-                                        */
   real_T UnitDelay6_X0_n;              /* Expression: 0
                                         * Referenced by: '<S3>/Unit Delay6'
                                         */
@@ -118,7 +115,7 @@ extern D_Work_str str_DWork;
  *
  */
 extern real_T In2;                     /* '<Root>/Sensor' */
-extern real_T Out2;                    /* '<Root>/setpoint (Deg)1' */
+extern real_T In1;                     /* '<Root>/Sensor1' */
 extern real_T Out1;                    /* '<S3>/Saturation' */
 
 /* Model entry point functions */

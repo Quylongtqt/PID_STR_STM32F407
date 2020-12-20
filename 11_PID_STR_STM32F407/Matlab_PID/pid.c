@@ -3,11 +3,11 @@
  *
  * Real-Time Workshop code generated for Simulink model pid.
  *
- * Model version                        : 1.31
+ * Model version                        : 1.33
  * Real-Time Workshop file version      : 7.4  (R2009b)  29-Jun-2009
- * Real-Time Workshop file generated on : Sun Nov 29 16:33:36 2020
+ * Real-Time Workshop file generated on : Thu Dec 17 22:31:43 2020
  * TLC version                          : 7.4 (Jul 14 2009)
- * C/C++ source code generated on       : Sun Nov 29 16:33:37 2020
+ * C/C++ source code generated on       : Thu Dec 17 22:31:44 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: Generic->32-bit Embedded Processor
@@ -20,7 +20,7 @@
 
 ///* Exported block signals */
 //real_T In2;                            /* '<Root>/In2' */
-//real_T Out2;                           /* '<Root>/Setpoint (Deg)' */
+//real_T In1;                            /* '<Root>/In1' */
 //real_T Out1;                           /* '<Root>/Saturation' */
 
 /* Block states (auto storage) */
@@ -37,13 +37,11 @@ void pid_step(void)
   real_T rtb_Sum;
   real_T rtb_FilterCoefficient;
 
-  /* Constant: '<Root>/Setpoint (Deg)' */
-  Out2 = pid_P.SetpointDeg_Value;
-
   /* Sum: '<Root>/Add' incorporates:
+   *  Inport: '<Root>/In1'
    *  Inport: '<Root>/In2'
    */
-  rtb_Add = Out2 - In2;
+  rtb_Add = In1 - In2;
 
   /* Gain: '<S1>/Filter Coefficient' incorporates:
    *  DiscreteIntegrator: '<S1>/Filter'
@@ -86,7 +84,6 @@ void pid_initialize(void)
   /* block I/O */
 
   /* exported global signals */
-  Out2 = 0.0;
   Out1 = 0.0;
 
   /* states (dwork) */
@@ -95,6 +92,7 @@ void pid_initialize(void)
 
   /* external inputs */
   In2 = 0.0;
+  In1 = 0.0;
 
   /* InitializeConditions for DiscreteIntegrator: '<S1>/Integrator' */
   pid_DWork.Integrator_DSTATE = pid_P.Integrator_IC;

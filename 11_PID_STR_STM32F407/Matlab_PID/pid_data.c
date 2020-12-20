@@ -3,11 +3,11 @@
  *
  * Real-Time Workshop code generated for Simulink model pid.
  *
- * Model version                        : 1.31
+ * Model version                        : 1.33
  * Real-Time Workshop file version      : 7.4  (R2009b)  29-Jun-2009
- * Real-Time Workshop file generated on : Sun Nov 29 16:33:36 2020
+ * Real-Time Workshop file generated on : Thu Dec 17 22:31:43 2020
  * TLC version                          : 7.4 (Jul 14 2009)
- * C/C++ source code generated on       : Sun Nov 29 16:33:37 2020
+ * C/C++ source code generated on       : Thu Dec 17 22:31:44 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: Generic->32-bit Embedded Processor
@@ -20,10 +20,7 @@
 
 /* Block parameters (auto storage) */
 Parameters_pid pid_P = {
-  360.0,                               /* Expression: 360
-                                        * Referenced by: '<Root>/Setpoint (Deg)'
-                                        */
-  0.50,                                 /* Expression: P
+  0.5,                                 /* Expression: P
                                         * Referenced by: '<S1>/Proportional Gain'
                                         */
   0.005,                               /* Computed Parameter: Integrator_gainval
@@ -32,7 +29,7 @@ Parameters_pid pid_P = {
   0.0,                                 /* Expression: InitialConditionForIntegrator
                                         * Referenced by: '<S1>/Integrator'
                                         */
-  0.005,                              /* Expression: D
+  0.0001,                              /* Expression: D
                                         * Referenced by: '<S1>/Derivative Gain'
                                         */
   0.005,                               /* Computed Parameter: Filter_gainval
@@ -50,7 +47,7 @@ Parameters_pid pid_P = {
   -10.0,                               /* Expression: -10
                                         * Referenced by: '<Root>/Saturation'
                                         */
-  0.0001                                /* Expression: I
+  0.004                                /* Expression: I
                                         * Referenced by: '<S1>/Integral Gain'
                                         */
 };

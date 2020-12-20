@@ -42,20 +42,23 @@ void PWM0_Set_Freq(uint32_t freq)
 void PWM0_Set_Duty(int16_t d)
 {
 	if (d<-1000)
-		d = -1000;
+		d = -600;
 	else if (d>1000)
-		d = 1000;
+		d = 600;
 
-	if (d == 0){
-		GPIO_ResetBits(GPIOD,GPIO_Pin_10
-		);  	// disable pwm
+	if (d == 0)
+	{
+		GPIO_ResetBits(GPIOD,GPIO_Pin_10);  	// disable pwm
+		GPIO_ResetBits(GPIOB,GPIO_Pin_15);
 	}	
-	else if (d > 0)	{
+	else if (d > 0)
+	{
 		GPIO_SetBits(GPIOD,GPIO_Pin_10);	// enabe pwm
 		GPIO_ResetBits(GPIOB,GPIO_Pin_15); 	// dir = 1
 	}
-	else 	{
-		GPIO_SetBits(GPIOD,GPIO_Pin_10);	// enabe pwm
+	else
+	{
+		GPIO_ResetBits(GPIOD,GPIO_Pin_10);	// enabe pwm
 		GPIO_SetBits(GPIOB,GPIO_Pin_15); 		// dir = 0
 		d = -d;
 	}
@@ -169,5 +172,3 @@ void delay_01ms(uint16_t period){
   	TIM6->CR1 = 0;		// stop Timer6
   	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, DISABLE);
 }
-
-

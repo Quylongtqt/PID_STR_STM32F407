@@ -3,11 +3,11 @@
  *
  * Real-Time Workshop code generated for Simulink model str.
  *
- * Model version                        : 1.59
+ * Model version                        : 1.60
  * Real-Time Workshop file version      : 7.4  (R2009b)  29-Jun-2009
- * Real-Time Workshop file generated on : Sun Dec 06 17:01:10 2020
+ * Real-Time Workshop file generated on : Thu Dec 17 22:35:47 2020
  * TLC version                          : 7.4 (Jul 14 2009)
- * C/C++ source code generated on       : Sun Dec 06 17:01:10 2020
+ * C/C++ source code generated on       : Thu Dec 17 22:35:47 2020
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: 32-bit Generic
@@ -20,7 +20,7 @@
 
 ///* Exported block signals */
 //real_T In2;                            /* '<Root>/Sensor' */
-//real_T Out2;                           /* '<Root>/setpoint (Deg)1' */
+//real_T In1;                            /* '<Root>/Sensor1' */
 //real_T Out1;                           /* '<S3>/Saturation' */
 
 /* Block states (auto storage) */
@@ -131,9 +131,6 @@ void str_step(void)
 
   /* '<S4>:1:8' */
 
-  /* Constant: '<Root>/setpoint (Deg)1' */
-  Out2 = str_P.setpointDeg1_Value;
-
   /* UnitDelay: '<S3>/Unit Delay6' */
   rtb_UnitDelay6_p = str_DWork.UnitDelay6_DSTATE_g;
 
@@ -142,6 +139,7 @@ void str_step(void)
 
   /* Embedded MATLAB: '<S3>/Embedded MATLAB Function' incorporates:
    *  Inport: '<Root>/Sensor'
+   *  Inport: '<Root>/Sensor1'
    *  SignalConversion: '<S5>/TmpSignal ConversionAt SFunction Inport3'
    *  SignalConversion: '<S5>/TmpSignal ConversionAt SFunction Inport4'
    *  UnitDelay: '<S3>/Unit Delay1'
@@ -209,7 +207,7 @@ void str_step(void)
   /* '<S5>:1:30' */
   /*  Luat dieu khien */
   /* '<S5>:1:33' */
-  eml_e = ((((eml_e * Out2 - (eml_e - ((eml_r + eml_r_0) + eml_r_1) /
+  eml_e = ((((eml_e * In1 - (eml_e - ((eml_r + eml_r_0) + eml_r_1) /
     eml_PHI_idx_0) * In2) - ((((eml_r + eml_r_0) + eml_r_1) - eml_r_3) - eml_a_0)
              / eml_PHI_idx_0 * str_DWork.UnitDelay6_DSTATE_g) - (eml_r_3 +
              eml_a_0) / eml_PHI_idx_0 * str_DWork.UnitDelay5_DSTATE_i) -
@@ -294,7 +292,6 @@ void str_initialize(void)
   /* block I/O */
 
   /* exported global signals */
-  Out2 = 0.0;
   Out1 = 0.0;
 
   /* states (dwork) */
@@ -303,9 +300,7 @@ void str_initialize(void)
 
   /* external inputs */
   In2 = 0.0;
-
-  /* Start for Constant: '<Root>/setpoint (Deg)1' */
-  Out2 = str_P.setpointDeg1_Value;
+  In1 = 0.0;
 
   /* InitializeConditions for UnitDelay: '<S2>/Unit Delay3' */
   str_DWork.UnitDelay3_DSTATE = str_P.UnitDelay3_X0;

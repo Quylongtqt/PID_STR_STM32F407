@@ -44,6 +44,10 @@
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
 .\objects\main.o: .\Matlab_PID\rt_SATURATE.h
 .\objects\main.o: .\Matlab_PID\pid_types.h
+.\objects\main.o: .\Matlab_PID_Speed\pid_speed.h
+.\objects\main.o: .\Matlab_PID_Speed\rtwtypes.h
+.\objects\main.o: .\Matlab_PID_Speed\rt_SATURATE.h
+.\objects\main.o: .\Matlab_PID_Speed\pid_speed_types.h
 .\objects\main.o: .\Matlab_STR\str.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\main.o: .\Matlab_STR\rtwtypes.h
@@ -53,3 +57,12 @@
 .\objects\main.o: .\Matlab_STR\rt_SATURATE.h
 .\objects\main.o: .\Matlab_STR\rt_pow_snf.h
 .\objects\main.o: .\Matlab_STR\str_types.h
+.\objects\main.o: .\Matlab_STR_Speed\str_speed.h
+.\objects\main.o: .\Matlab_STR_Speed\rtwtypes.h
+.\objects\main.o: .\Matlab_STR_Speed\rt_nonfinite.h
+.\objects\main.o: .\Matlab_STR_Speed\rtGetInf.h
+.\objects\main.o: .\Matlab_STR_Speed\rtGetNaN.h
+.\objects\main.o: .\Matlab_STR_Speed\rt_SATURATE.h
+.\objects\main.o: .\Matlab_STR_Speed\rt_pow_snf.h
+.\objects\main.o: .\Matlab_STR_Speed\str_speed_types.h
+.\objects\main.o: variable_declare.h
