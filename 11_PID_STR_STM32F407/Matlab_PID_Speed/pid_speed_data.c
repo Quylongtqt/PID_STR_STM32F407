@@ -20,7 +20,7 @@
 
 /* Block parameters (auto storage) */
 Parameters_pid_speed pid_speed_P = {
-  0.001,                                 /* Expression: P
+  0.015,                                 /* Expression: P
                                         * Referenced by: '<S1>/Proportional Gain'
                                         */
   0.005,                               /* Computed Parameter: Integrator_gainval

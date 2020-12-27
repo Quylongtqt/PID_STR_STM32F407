@@ -22,6 +22,7 @@
 #include "pid_speed.h"
 #include "str.h"                       /* STR Model's header file */
 #include "str_speed.h"
+#include "lqr.h"                       /* LQR Model's header file */
 #include "rtwtypes.h"                  /* MathWorks types */
 #include "variable_declare.h"    
 
@@ -33,18 +34,19 @@
 #define POSITION
 //#define UART
 //#define SPEED
+
+extern int32_t 	pulse_cur;
 static boolean_T OverrunFlag = 0;
 
 uint8_t txbuff[TX_BUFF_SIZE];
 uint8_t rxbuff[RX_BUFF_SIZE];
 
-//uint16_t data_handle[BUFF_SIZE];
-uint16_t data_handle[BUFF_SIZE] = {0xAA,0x00,0x11,0x00,0x14,0x00,0x00,0x00};
+uint16_t data_handle[BUFF_SIZE];
+//uint16_t data_handle[BUFF_SIZE] = {0xAA,0x00,0x00,0x00,0x14,0x00,0x00,0x00};
 
 uint8_t ASCII_Char_Udk[5] = {0};
 uint8_t ASCII_Char_In2[5] = {0};
 uint8_t ASCII_Char_Out2[5] = {0};
-
 int16_t udk, pre_udk;
 
 enumControlType ControlType;
@@ -60,13 +62,13 @@ double Out_Speed = 0;
 /* Exported block signals */
 
 real_T In1 = 0;                            /* '<Root>/Setpoint (Deg) or (RPM' */
-real_T In2 = 0;                            /* '<Root>/In2' */
+real_T In2 = 0;
+real_T In2_LQR = 0;                              /* '<Root>/In2' */
 real_T Out1 = 0;                           /* '<Root>/Saturation' */
 real_T Out2 = 0;                           /* '<Root>/Saturation' */
-
+int in_test = 0;
 void rt_OneStep(void);
 void init_uart_dma(void);
-void Convert_To_ASCII(int16_t input, int8_t size, uint8_t *data_out);
 
 int main(void)
 {
@@ -74,6 +76,7 @@ int main(void)
 	In2 = 0;
 	udk = 0;
 	pre_udk = 0;
+	int caculated_temp = 0x0000;
 	
 	/* Enable SysTick at 5ms interrupt */
   SysTick_Config(SystemCoreClock/200);
@@ -87,7 +90,7 @@ int main(void)
 	{
 		/* Check byte[0] -> 0xAA: start excuting*/
     if(data_handle[0]== 0xAA)
-    {      
+    {
       /* Check byte[1]-> Stop motor */
 			MotorEn = data_handle[1];
       if(MotorEn == MOTOR_DISABLE)
@@ -123,27 +126,48 @@ int main(void)
               str_speed_initialize();
               break;
           }
+					case LQR_POSITION:
+					{
+							lqr_initialize();
+					}
           default:
           {
               break;
           }
-        }
-				
-        
+        }  
+			 {
+			 	caculated_temp = (int)In2;
+				txbuff[0] = (caculated_temp&0x000F);
+				txbuff[1] = ((caculated_temp>>4)&0x000F);
+				txbuff[2] = ((caculated_temp>>8)&0x000F);
+				txbuff[3] = ((caculated_temp>>12)&0x000F);
+				txbuff[4] = ((caculated_temp>>16)&0x000F);
+				txbuff[5] = ((caculated_temp>>20)&0x000F);
+				txbuff[6] = ((caculated_temp>>24)&0x000F);
+				txbuff[7] = ((caculated_temp>>28)&0x000F);
+			 	DMA_ClearFlag(DMA1_Stream4, DMA_FLAG_TCIF4);
+			 	DMA1_Stream4->NDTR = TX_BUFF_SIZE; // Have to re-assign NDTR because when transferd 1 byte, NDTR will decrese 1
+			 	DMA_Cmd(DMA1_Stream4, ENABLE);
+			 }			
+				tick_count_uart = 0;
         while(1)
         {
 					if(MotorEn == MOTOR_DISABLE)
 					{
 						//Stop motor
+							/* TIM enable counter */
 						PWM0_Set_Duty(0);
 						delay_01ms(1000);
+						pulse_cur	= 0.0;
+						break;
 					}
 					else
 					{
-						In1 = (data_handle[4]) + ((data_handle[3])<<8);
+						in_test = (int)((data_handle[6]) + ((data_handle[5])<<8) + ((data_handle[4])<<16) + ((data_handle[3])<<24));
+						In1 = in_test;//(data_handle[4]) + ((data_handle[3])<<8);
 						switch(ControlType)
 						{
-						case PID_POSITION:
+						case PID_POSITION: 
 						case STR_POSITION:
 						{
 							if(tick_flag)
@@ -154,27 +178,30 @@ int main(void)
 								/*After caculated, the value of encoder count/1 circle is 1510*/
 								In2 = (double)ENC0_GetPos()/200000*360.0;
 								rt_OneStep();
-								Out1 = Out1*1000/10;
+								Out1 = Out1*1000/20;
 								udk = (int)Out1;
 								/*------------------------Saturation for Output---------------------*/
-								if((In2 > In1-In1/1000)&(In2<In1+In1/1000))
-								{
-									udk = 0;
-								}
+//								if((In2 > In1-In1/1000)&(In2<In1+In1/1000))
+//								{
+//									udk = 0;
+//								}
 								PWM0_Set_Duty(udk);
 								/*-----------------------Send data to Tx UART4---------------------*/
-								if((440 <tick_count_uart)&(tick_count_uart < 450))
+								if((10 <tick_count_uart)&(tick_count_uart < 20))
 								{
-										
-									tick_count_uart = 0;
-									if(USART_GetITStatus(UART4, USART_IT_TXE)==RESET)
-									{
-											USART_SendData(UART4,In2);
-									}
+									caculated_temp = (int)(In2*10);
+									txbuff[0] = (caculated_temp&0x000F);
+									txbuff[1] = ((caculated_temp>>4)&0x000F);
+									txbuff[2] = ((caculated_temp>>8)&0x000F);
+									txbuff[3] = ((caculated_temp>>12)&0x000F);
+									txbuff[4] = ((caculated_temp>>16)&0x000F);
+									txbuff[5] = ((caculated_temp>>20)&0x000F);
+									txbuff[6] = ((caculated_temp>>24)&0x000F);
+									txbuff[7] = ((caculated_temp>>28)&0x000F);
 									tick_count_uart = 0;
 									DMA_ClearFlag(DMA1_Stream4, DMA_FLAG_TCIF4);
 									DMA1_Stream4->NDTR = TX_BUFF_SIZE; // Have to re-assign NDTR because when transferd 1 byte, NDTR will decrese 1
-									
+									DMA_Cmd(DMA1_Stream4, ENABLE);
 								}
 							 }
 							 break;
@@ -189,7 +216,7 @@ int main(void)
 								Pre_Pos = Pos;
 								Pos = (double)ENC0_GetPos()/200000*360; // Update Position
 								Speed = (Pos - Pre_Pos)*1000/360*60; // vong/phut
-								//////////Speed Control//////////
+								/*---------------Speed Control------------------*/
 								In2 = Speed;
 								pre_udk = udk;
 								rt_OneStep();
@@ -197,8 +224,17 @@ int main(void)
 								udk = (int)Out1 + pre_udk;
 								PWM0_Set_Duty(udk);
 								/*-----------------------Send data to Tx UART4---------------------*/
-								if((440 <tick_count_uart)&(tick_count_uart < 450))
+								if((50 <tick_count_uart)&(tick_count_uart < 100))
 								{
+									caculated_temp = (int)(In2*10);//testing
+									txbuff[0] = (caculated_temp&0x000F);
+									txbuff[1] = ((caculated_temp>>4)&0x000F);
+									txbuff[2] = ((caculated_temp>>8)&0x000F);
+									txbuff[3] = ((caculated_temp>>12)&0x000F);
+									txbuff[4] = ((caculated_temp>>16)&0x000F);
+									txbuff[5] = ((caculated_temp>>20)&0x000F);
+									txbuff[6] = ((caculated_temp>>24)&0x000F);
+									txbuff[7] = ((caculated_temp>>28)&0x000F);
 									tick_count_uart = 0;
 									DMA_ClearFlag(DMA1_Stream4, DMA_FLAG_TCIF4);
 									DMA1_Stream4->NDTR = TX_BUFF_SIZE; // Have to re-assign NDTR because when transferd 1 byte, NDTR will decrese 1
@@ -221,8 +257,53 @@ int main(void)
 								udk = (int)Out1;
 								PWM0_Set_Duty(udk);
 								/*-----------------------Send data to Tx UART4---------------------*/
-								if((440 <tick_count_uart)&(tick_count_uart < 450))
+								if((50 <tick_count_uart)&(tick_count_uart < 100))
 								{
+									caculated_temp = (int)(In2*10);
+									txbuff[0] = (caculated_temp&0x000F);
+									txbuff[1] = ((caculated_temp>>4)&0x000F);
+									txbuff[2] = ((caculated_temp>>8)&0x000F);
+									txbuff[3] = ((caculated_temp>>12)&0x000F);
+									txbuff[4] = ((caculated_temp>>16)&0x000F);
+									txbuff[5] = ((caculated_temp>>20)&0x000F);
+									txbuff[6] = ((caculated_temp>>24)&0x000F);
+									txbuff[7] = ((caculated_temp>>28)&0x000F);
+									tick_count_uart = 0;
+									DMA_ClearFlag(DMA1_Stream4, DMA_FLAG_TCIF4);
+									DMA1_Stream4->NDTR = TX_BUFF_SIZE; // Have to re-assign NDTR because when transferd 1 byte, NDTR will decrese 1
+									DMA_Cmd(DMA1_Stream4, ENABLE);
+								}
+								break;
+							}
+							
+							case LQR_POSITION:
+							{
+								/*------------------------LQR Position-----------------------*/
+								/*After caculated, the value of encoder count/1 circle is 1510*/
+								In2 = (double)ENC0_GetPos()/200000*360.0;
+								In2_LQR = In2;
+								In2 = In1 - In2;
+								rt_OneStep();
+								Out1 = Out1*1000/30;
+								udk = (int)Out1;
+								/*------------------------Saturation for Output---------------------*/
+//								if((In2 > In1-In1/1000)&(In2<In1+In1/1000))
+//								{
+//									udk = 0;
+//								}
+								PWM0_Set_Duty(udk);
+								/*-----------------------Send data to Tx UART4---------------------*/
+								if((10 <tick_count_uart)&(tick_count_uart < 20))
+								{
+									caculated_temp = (int)(In2_LQR*10);
+									txbuff[0] = (caculated_temp&0x000F);
+									txbuff[1] = ((caculated_temp>>4)&0x000F);
+									txbuff[2] = ((caculated_temp>>8)&0x000F);
+									txbuff[3] = ((caculated_temp>>12)&0x000F);
+									txbuff[4] = ((caculated_temp>>16)&0x000F);
+									txbuff[5] = ((caculated_temp>>20)&0x000F);
+									txbuff[6] = ((caculated_temp>>24)&0x000F);
+									txbuff[7] = ((caculated_temp>>28)&0x000F);
 									tick_count_uart = 0;
 									DMA_ClearFlag(DMA1_Stream4, DMA_FLAG_TCIF4);
 									DMA1_Stream4->NDTR = TX_BUFF_SIZE; // Have to re-assign NDTR because when transferd 1 byte, NDTR will decrese 1
@@ -247,19 +328,6 @@ int main(void)
 	}
 }
 
-/*---------------DMA - UART4 Rx Interrupt---------------------*/
-void DMA1_Stream2_IRQHandler(void)
-{
-	uint16_t i;
-  /* Clear the DMA1_Stream2 TCIF2 pending bit */
-  DMA_ClearITPendingBit(DMA1_Stream2, DMA_IT_TCIF2);
-  for(i=0; i<BUFF_SIZE; i++)
-	{
-    data_handle[i] = rxbuff[i];
-	}
-	DMA_Cmd(DMA1_Stream2, ENABLE);
-}
-/*--------------------------------------*/
 
 /*-----------Function rt_OneStep--------*/
 void rt_OneStep(void)
@@ -297,6 +365,11 @@ void rt_OneStep(void)
 		case STR_SPEED:
 		{
 				str_speed_step();
+				break;
+		}
+		case LQR_POSITION:
+		{
+				lqr_step();
 				break;
 		}
 		default:
@@ -361,19 +434,19 @@ void init_uart_dma(void)
   USART_InitStructure.USART_Parity = USART_Parity_No;
   USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
   USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-
   USART_Init(UART4, &USART_InitStructure);
 	
 	/* Enable USART */
   USART_Cmd(UART4, ENABLE);
 	
 	/* Enable UART4 DMA */
-  USART_DMACmd(UART4, USART_DMAReq_Tx, ENABLE); 
+  USART_DMACmd(UART4, USART_DMAReq_Rx, ENABLE); 
+	USART_DMACmd(UART4, USART_DMAReq_Tx, ENABLE); 
 	
 	/* DMA1 Stream4 Channel4 for UART4 Tx configuration */			
   DMA_InitStructure.DMA_Channel = DMA_Channel_4;  
   DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&UART4->DR;
-  DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&txbuff;
+  DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)txbuff;
   DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
   DMA_InitStructure.DMA_BufferSize = TX_BUFF_SIZE;
   DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable; //Not increase peripheral address
@@ -442,3 +515,20 @@ void Convert_To_ASCII(int16_t input, int8_t size, uint8_t *data_out)
 	}
 }
 /*------End of the Function Convert_To_ASCII--------*/
+/*---------------DMA - UART4 Rx Interrupt---------------------*/
+void DMA1_Stream2_IRQHandler(void)
+{
+	uint16_t i;
+  /* Clear the DMA1_Stream2 TCIF2 pending bit */
+  DMA_ClearITPendingBit(DMA1_Stream2, DMA_IT_TCIF2);
+  for(i=0; i<BUFF_SIZE; i++)
+	{
+    data_handle[i] = rxbuff[i];
+	}
+	DMA_Cmd(DMA1_Stream2, ENABLE);
+	{
+		 MotorEn = (enumMotorEn)(data_handle[1]);
+	}
+	
+}
+/*--------------------------------------*/

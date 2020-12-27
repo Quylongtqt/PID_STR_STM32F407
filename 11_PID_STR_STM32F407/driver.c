@@ -6,13 +6,13 @@ void init_main(void);
 void PWM0_Set_Freq(uint32_t freq);
 void PWM0_Set_Duty(int16_t d);
 int32_t ENC0_GetPos(void);
+int32_t 	pulse_cur = 0.0;
 
 
 /* Get encoder counter 32 bit */
 int32_t ENC0_GetPos(void)
 {
 	static int32_t 	p = 0, p_pre = 0, dp = 0;
-  static int32_t 	pulse_cur = 0.0;
 	
 	p = (int32_t)TIM1->CNT;
 	dp = p - p_pre;
